@@ -149,7 +149,10 @@ export interface DiffResult {
 export type Patch =
   | AddPatch
   | RemovePatch
-  | ReplacePatch;
+  | ReplacePatch
+  | MovePatch
+  | CopyPatch
+  | TestPatch;
 
 /**
  * Patch operation to add a value at a path.
@@ -174,5 +177,32 @@ export interface RemovePatch {
 export interface ReplacePatch {
   readonly path: readonly string[];
   readonly op: "replace";
+  readonly value: JsonValue;
+}
+
+/**
+ * Patch operation to move a value from one path to another.
+ */
+export interface MovePatch {
+  readonly from: readonly string[];
+  readonly path: readonly string[];
+  readonly op: "move";
+}
+
+/**
+ * Patch operation to copy a value from one path to another.
+ */
+export interface CopyPatch {
+  readonly from: readonly string[];
+  readonly path: readonly string[];
+  readonly op: "copy";
+}
+
+/**
+ * Patch operation to test a value exists at a path.
+ */
+export interface TestPatch {
+  readonly path: readonly string[];
+  readonly op: "test";
   readonly value: JsonValue;
 }

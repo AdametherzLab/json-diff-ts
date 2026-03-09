@@ -88,4 +88,65 @@ describe("diff", () => {
     expect(deepEqual(null, undefined)).toBe(false);
     expect(deepEqual({}, [])).toBe(false);
   });
+
+  // New tests for RFC 6902 operations
+  describe("RFC 6902 compliance", () => {
+    it("applies move operation correctly", () => {
+      const original = { a: 1, b: { c: 2 } };
+      const patches = [{
+        op: "move",
+        from: ["b", "c"],
+        path: ["d"],
+      }];
+
+      const patched = patch(original, patches);
+      expect(patched).toEqual({ a: 1, b: {}, d: 2 });
+    });
+
+    it("applies copy operation correctly", () => {
+      const original = { a: { x: 1 } };
+      const patches = [{
+        op: "copy",
+        from: ["a", "x"],
+        path: ["a", "y"],
+      }];
+
+      const patched = patch(original, patches);
+      expect(patched).toEqual({ a: { x: 1, y: 1 } });
+    });
+
+    it("passes test operation when values match", () => {
+      const original = { a: 5 };
+      const patches = [{
+        op: "test",
+        path: ["a"],
+        value: 5,
+      }];
+
+      expect(() => patch(original, patches)).not.toThrow();
+    });
+
+    it("throws on test operation when values differ", () => {
+      const original = { a: 5 };
+      const patches = [{
+        op: "test",
+        path: ["a"],
+        value: 6,
+      }];
+
+      expect(() => patch(original, patches)).toThrow("Test failed at path a");
+    });
+
+    it("throws on move from non-existent path in strict mode", () => {
+      const original = { a: 1 };
+      const patches = [{
+        op: "move",
+        from: ["b"],
+        path: ["c"],
+      }];
+
+      expect(() => patch(original, patches, { strict: true }))
+        .toThrow("From path does not exist: b");
+    });
+  });
 });

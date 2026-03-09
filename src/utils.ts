@@ -337,7 +337,7 @@ export function patch(
   const result = JSON.parse(JSON.stringify(value)) as JsonValue;
 
   for (const p of patches) {
-    const pathSegments = p.path;
+    let pathSegments = p.path;
 
     if (p.op === "add") {
       if (opts.strict) {
@@ -363,6 +363,34 @@ export function patch(
         }
       }
       setAtPath(result, pathSegments, p.value, opts.createMissingPaths);
+    } else if (p.op === "move") {
+      const fromValue = getAtPath(result, p.from);
+      
+      if (opts.strict && fromValue === undefined) {
+        throw new Error(`From path does not exist: ${buildPath(p.from)}`);
+      }
+
+      deleteAtPath(result, p.from);
+      setAtPath(result, pathSegments, fromValue!, opts.createMissingPaths);
+    } else if (p.op === "copy") {
+      const fromValue = getAtPath(result, p.from);
+
+      if (opts.strict && fromValue === undefined) {
+        throw new Error(`From path does not exist: ${buildPath(p.from)}`);
+      }
+
+      setAtPath(result, pathSegments, fromValue!, opts.createMissingPaths);
+    } else if (p.op === "test") {
+      const currentValue = getAtPath(result, pathSegments);
+
+      if (opts.strict && currentValue === undefined) {
+        throw new Error(`Test path does not exist: ${buildPath(pathSegments)}`);
+      }
+
+      if (!deepEqual(currentValue, p.value)) {
+        throw new Error(`Test failed at path ${buildPath(pathSegments)}: Expected '${
+          JSON.stringify(p.value)}' but found '${JSON.stringify(currentValue)}'`);
+      }
     }
   }
 

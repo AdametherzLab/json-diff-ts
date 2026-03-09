@@ -1,6 +1,6 @@
 {
   "name": "@adametherzlab/json-diff-ts",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "JSON diff — compare objects, list changes, apply patches",
   "type": "module",
   "main": "./dist/index.js",
